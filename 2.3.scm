@@ -39,5 +39,76 @@
 )
 
 (define (dot-product v w)
-   (accumulate + 0 (accumulate-n * 1 (list v w)))
+   (accumulate + 0 (map * v w))
+)
+
+(define (matrix-*-vector m v)
+    (map (lambda (r) (dot-product r v)) m)
+)
+
+(define (transpose mat)
+    (accumulate-n (lambda (l r) (cons l r)) `() mat)
+)
+(define (matrix-*-matrix m n)
+    (let ((cols (transpose n)))
+    (map (lambda (row) 
+        (map (lambda (col) (dot-product row col)) cols)
+        )
+     m) 
+    )
+)
+
+(define (fold-left op initial sequence)
+    (define (iter result rest)
+        (if (null? rest)
+            result
+            (iter (op result (car rest))
+                (cdr rest)
+            )
+        )
+    )
+    (iter initial sequence)
+)
+
+
+
+(define (flatmap proc seq)
+    (accumulate append `() (map proc seq))
+)
+
+(define (enumerate-interval s e)
+    (if (> s e) `() (cons s (enumerate-interval (+ s 1) e)))
+)
+(define (unique-pair n)
+    (flatmap (lambda (i) 
+        (map 
+            (lambda (j)
+                (list i j)) 
+        (enumerate-interval 1 (- i 1)))
+    ) (enumerate-interval 1 n))
+)
+;;; exercise 2.41
+(define (triple-pair n)
+    (flatmap (lambda (i)
+        (flatmap (lambda (j)
+            (map 
+                (lambda (k)
+                    (list k j i))
+
+                (enumerate-interval 1 (- j 1)))
+                )
+        (enumerate-interval 1 (- i 1))
+        )
+    ) 
+    (enumerate-interval 1 n))
+)
+(define (filter-triple seq s)
+    (filter (lambda (l)
+        (= (accumulate + 0 l) s)
+    ) seq)
+)
+
+
+(define (adjoin-position new-row k rest-of-queens)
+    (append rest-of-queens (list k))
 )
